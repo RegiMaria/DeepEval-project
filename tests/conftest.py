@@ -66,19 +66,35 @@ def judge():
 @pytest.fixture(scope="session")
 def golden_dataset():
     """
-    Carrega o golden_dataset.csv gerado pelo RAGAS-Project.
-    Arquivo esperado em: data/golden_dataset.csv
+    Carrega o golden_dataset.csv e enriquece com answer e contexts
+    gerados pelo pipeline RAG em tempo de execução.
 
-    Colunas (mesmo formato do RAGAS-Project):
-        question      → input do LLMTestCase
-        answer        → actual_output (resposta do RAG)
-        contexts      → retrieval_context (chunks recuperados)
-        ground_truth  → expected_output
+    Colunas do CSV:
+        question       → input do LLMTestCase
+        ground_truth   → expected_output
+        question_type  → informativo (simple, multi_context…)
+
+    Colunas adicionadas pelo pipeline:
+        answer         → actual_output (resposta gerada pelo RAG)
+        contexts       → retrieval_context (chunks recuperados)
     """
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    from deepeval_project.rag_pipeline import RAGPipeline
+
     df = pd.read_csv("outputs/golden_dataset.csv")
 
-    # contexts vem como string no CSV — converter para lista
-    df["contexts"] = df["contexts"].apply(
-        lambda x: x.split("|||") if isinstance(x, str) else [str(x)]
-    )
+    rag = RAGPipeline()
+    rag.build()
+
+    answers = []
+    contexts_list = []
+    for question in df["question"]:
+        result = rag.query(question)
+        answers.append(result["answer"])
+        contexts_list.append(result["contexts"])
+
+    df["answer"] = answers
+    df["contexts"] = contexts_list
     return df
