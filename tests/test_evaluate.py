@@ -7,7 +7,7 @@ Comparação direta:
     RAGAS-Project (evaluate.py)      DeepEval-Project (este arquivo)
     ─────────────────────────────    ──────────────────────────────────────
     Faithfulness                 →   FaithfulnessMetric
-    Answer Correctness           →   AnswerCorrectnessMetric
+    Answer Correctness           →   GEval (corretude customizada)
     Answer Relevance             →   AnswerRelevancyMetric
     Context Precision            →   ContextualPrecisionMetric
     Context Recall               →   ContextualRecallMetric
@@ -21,10 +21,10 @@ Diferenças chave:
 
 import pytest
 from deepeval import assert_test
-from deepeval.test_case import LLMTestCase
+from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import (
     FaithfulnessMetric,
-    AnswerCorrectnessMetric,
+    GEval,
     AnswerRelevancyMetric,
     ContextualPrecisionMetric,
     ContextualRecallMetric,
@@ -71,8 +71,19 @@ def test_correctness(judge, golden_dataset):
     Pergunta: a resposta corresponde ao ground truth?
 
     No RAGAS-Project: execução 1 = 0.86, execução 2 = 0.80.
+    AnswerCorrectnessMetric não existe no deepeval 3.9.x — substituído por GEval.
     """
-    metric = AnswerCorrectnessMetric(threshold=0.7, model=judge)
+    metric = GEval(
+        name="answer_correctness",
+        criteria="Determine se a resposta está correta e alinhada com o ground truth fornecido.",
+        evaluation_params=[
+            LLMTestCaseParams.INPUT,
+            LLMTestCaseParams.ACTUAL_OUTPUT,
+            LLMTestCaseParams.EXPECTED_OUTPUT,
+        ],
+        threshold=0.7,
+        model=judge,
+    )
     for tc in build_test_cases(golden_dataset):
         assert_test(tc, [metric])
 
@@ -119,7 +130,17 @@ def test_suite_completa(judge, golden_dataset):
     """
     metrics = [
         FaithfulnessMetric(threshold=0.7, model=judge),
-        AnswerCorrectnessMetric(threshold=0.7, model=judge),
+        GEval(
+            name="answer_correctness",
+            criteria="Determine se a resposta está correta e alinhada com o ground truth fornecido.",
+            evaluation_params=[
+                LLMTestCaseParams.INPUT,
+                LLMTestCaseParams.ACTUAL_OUTPUT,
+                LLMTestCaseParams.EXPECTED_OUTPUT,
+            ],
+            threshold=0.7,
+            model=judge,
+        ),
         AnswerRelevancyMetric(threshold=0.7, model=judge),
         ContextualPrecisionMetric(threshold=0.7, model=judge),
         ContextualRecallMetric(threshold=0.7, model=judge),
