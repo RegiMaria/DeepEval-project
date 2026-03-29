@@ -1,0 +1,26 @@
+# DeepEval-Project — dependências
+# Sem OpenAI. 100% Anthropic.
+
+# ── Avaliação ─────────────────────────────────
+deepeval>=0.21.0
+
+# ── LLM juiz ──────────────────────────────────
+anthropic>=0.20.0
+
+# ── RAG pipeline ──────────────────────────────
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+langchain-huggingface>=0.1.0
+langchain-anthropic>=0.3.0
+langchain-core>=0.3.0
+langchain-classic>=1.0.0
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# ── Dados ─────────────────────────────────────
+pandas>=2.0.0
+python-dotenv>=1.0.0
+
+# ── Testes ────────────────────────────────────
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
