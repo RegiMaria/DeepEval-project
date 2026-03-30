@@ -1,0 +1,168 @@
+
+<style>
+  * { box-sizing: border-box; }
+  body { background: #fff; margin: 0; padding: 16px; font-family: system-ui, sans-serif; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  thead tr { background: #f0ede5; }
+  th { padding: 9px 12px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #ccc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; color: #222; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf6; }
+  .pass { background: #e3f5ec; color: #0a5c3f; font-weight: 700; border-radius: 4px; padding: 2px 8px; font-size: 11px; white-space: nowrap; }
+  .fail { background: #fdecea; color: #8b1a1a; font-weight: 700; border-radius: 4px; padding: 2px 8px; font-size: 11px; white-space: nowrap; }
+  .ok  { color: #0a5c3f; font-weight: 600; }
+  .bad { color: #c0392b; font-weight: 600; }
+  .warn { color: #b7700a; font-weight: 600; }
+  .pergunta { color: #333; font-size: 12px; }
+  .reason { color: #555; font-size: 11px; line-height: 1.5; }
+  .section-row td { background: #f7f5f0; font-weight: 600; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 6px 12px; border-top: 1px solid #ddd; }
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pergunta</th>
+      <th>Métrica</th>
+      <th>Score</th>
+      <th>Status</th>
+      <th>Motivo</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- FAITHFULNESS -->
+    <tr class="section-row"><td colspan="5">Faithfulness — todas as 10 perguntas</td></tr>
+    <tr>
+      <td class="pergunta">Todas as 10</td>
+      <td>Faithfulness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Respostas 100% fiéis ao contexto. Nenhuma contradição encontrada.</td>
+    </tr>
+
+    <!-- CORRECTNESS -->
+    <tr class="section-row"><td colspan="5">Correctness (GEval)</td></tr>
+    <tr>
+      <td class="pergunta">Quem cunhou o termo "inteligência artificial"?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">McCarthy, 1956, Dartmouth — todos os fatos corretos.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">O que foi o Teste de Turing?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Turing, 1950, critério de inteligência — correto e completo.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Quais foram os Invernos da IA?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">1974–1980 e 1987–1993, promessas exageradas — idêntico ao ground truth.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Como o AlexNet mudou a IA em 2012?</td>
+      <td>Correctness</td>
+      <td class="ok">0.9</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Fatos corretos. Adicionou contexto sobre GPT além do necessário.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">O que é o GPT-3?</td>
+      <td>Correctness</td>
+      <td class="ok">0.9</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">2020, 175B parâmetros corretos. Omitiu "marco em geração de texto".</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Por que o ChatGPT cresceu tão rápido?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">1 milhão de usuários em 5 dias, novembro 2022 — correto.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Quanto tempo entre Turing e ChatGPT?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">72 anos calculado corretamente. Contexto extra não prejudicou.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Desafios éticos da IA?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Bias, privacidade, empregos, alinhamento + Future of Life e Anthropic.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">IA no Brasil?</td>
+      <td>Correctness</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Marco regulatório 2024, IMPA, USP, UNICAMP — correto.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Quais aplicações atuais da IA no texto?</td>
+      <td>Correctness</td>
+      <td class="bad">0.0</td>
+      <td><span class="fail">FAILED</span></td>
+      <td class="reason">RAG disse que o texto não menciona aplicações. Ground truth lista: diagnóstico médico, veículos autônomos, Netflix, Siri, Alexa. Contradição direta.</td>
+    </tr>
+
+    <!-- RELEVANCY -->
+    <tr class="section-row"><td colspan="5">Answer Relevancy</td></tr>
+    <tr>
+      <td class="pergunta">7 perguntas</td>
+      <td>Relevancy</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Respostas diretas e focadas, sem informações desnecessárias.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">AlexNet (2012)</td>
+      <td>Relevancy</td>
+      <td class="ok">0.9</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Incluiu menção ao GPT que não era necessária, mas não prejudicou.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Quanto tempo entre Turing e ChatGPT?</td>
+      <td>Relevancy</td>
+      <td class="warn">0.78</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Adicionou detalhes sobre GPT-3 não solicitados. Passou no limite.</td>
+    </tr>
+
+    <!-- CONTEXT PRECISION -->
+    <tr class="section-row"><td colspan="5">Contextual Precision</td></tr>
+    <tr>
+      <td class="pergunta">Quem cunhou o termo "inteligência artificial"?</td>
+      <td>Ctx Precision</td>
+      <td class="bad">0.33</td>
+      <td><span class="fail">FAILED</span></td>
+      <td class="reason">Chunk correto (McCarthy/1956/Dartmouth) veio em 3º lugar. Chunks 1 e 2 eram irrelevantes: definição geral de IA e marco regulatório do Brasil.</td>
+    </tr>
+
+    <!-- CONTEXT RECALL -->
+    <tr class="section-row"><td colspan="5">Contextual Recall</td></tr>
+    <tr>
+      <td class="pergunta">9 perguntas</td>
+      <td>Ctx Recall</td>
+      <td class="ok">1.0</td>
+      <td><span class="pass">PASSED</span></td>
+      <td class="reason">Contexto recuperado cobriu completamente o necessário para responder.</td>
+    </tr>
+    <tr>
+      <td class="pergunta">Quais aplicações atuais da IA no texto?</td>
+      <td>Ctx Recall</td>
+      <td class="bad">0.0</td>
+      <td><span class="fail">FAILED</span></td>
+      <td class="reason">Nenhum chunk continha informações sobre aplicações. ChromaDB trouxe história da IA e regulação do Brasil em vez do chunk correto.</td>
+    </tr>
+
+  </tbody>
+</table>

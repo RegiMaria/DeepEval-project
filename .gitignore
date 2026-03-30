@@ -1,0 +1,24 @@
+
+.env                                                                                                                                                       
+*.env 
+
+# Windows metadata
+*:Zone.Identifier
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# ChromaDB (gerado localmente)
+data/chroma_db/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.env.local
