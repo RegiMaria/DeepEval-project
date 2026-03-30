@@ -21,14 +21,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Login no Confident AI
-        env:
-          CONFIDENT_API_KEY: ${{ secrets.CONFIDENT_API_KEY }}
-        run: deepeval login --confident-api-key $CONFIDENT_API_KEY
-
-      - name: Rodar avaliação
+      - name: Run DeepEval tests
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CONFIDENT_API_KEY: ${{ secrets.CONFIDENT_API_KEY }}
         run: deepeval test run tests/
 
       # resultados já sobem automaticamente ao Confident AI via deepeval login
