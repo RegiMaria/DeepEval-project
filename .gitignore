@@ -21,3 +21,4 @@ data/chroma_db/
 .pytest_cache/
 .coverage
 htmlcov/
+.env.local

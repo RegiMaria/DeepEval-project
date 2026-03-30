@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAGAS vs DeepEval — Relatório Comparativo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f2eb;
+    --accent: #c84b2f;
+    --accent2: #2a6b4f;
+    --muted: #7a7367;
+    --border: #d8d3c8;
+    --code-bg: #1a1916;
+    --code-fg: #e8e2d4;
+    --pass-bg: #e8f5ee;
+    --pass-fg: #1a5c38;
+    --fail-bg: #fbeae6;
+    --fail-fg: #8b2212;
+    --warn-fg: #8a5a00;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 56px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    color: var(--ink);
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    margin-top: 18px;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 560px;
+  }
+  .meta {
+    margin-top: 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .08em;
+    display: flex;
+    gap: 24px;
+  }
+  .meta span::before { content: '— '; }
+
+  /* ── LAYOUT ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+
+  /* ── SECTION ── */
+  section {
+    padding: 64px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  section:first-of-type { border-top: none; margin-top: 56px; }
+
+  .section-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -.01em;
+  }
+  p { margin-bottom: 18px; color: #2a2820; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── COMPARISON BLOCKS ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 28px 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  @media (max-width: 600px) { .compare { grid-template-columns: 1fr; } }
+
+  .compare-side {
+    padding: 20px 22px;
+    background: #fff;
+  }
+  .compare-side.ragas { border-right: 1px solid var(--border); }
+  .compare-side.deepeval { background: #f0f7f4; }
+  .compare-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .compare-side.ragas .compare-label { color: var(--muted); }
+  .compare-side.deepeval .compare-label { color: var(--accent2); }
+
+  /* ── CODE ── */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: 4px;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-x: auto;
+    margin: 24px 0;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  }
+  code {
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    background: #e8e2d4;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #2a2820;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  .kw { color: #e07b6b; }
+  .st { color: #a8d4b0; }
+  .cm { color: #7a7060; font-style: italic; }
+  .fn { color: #d4b896; }
+
+  /* ── QUOTE ── */
+  blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 28px 0;
+    padding: 16px 24px;
+    background: #fff;
+    font-style: italic;
+    font-size: 16px;
+    color: #3a3830;
+  }
+  blockquote cite {
+    display: block;
+    margin-top: 8px;
+    font-style: normal;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    margin: 32px 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  thead tr { background: var(--ink); color: var(--paper); }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #faf8f3; }
+  .section-row td {
+    background: #f0ede5;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 7px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .pass-pill { background: var(--pass-bg); color: var(--pass-fg); font-weight: 700; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-family: 'Syne', sans-serif; white-space: nowrap; letter-spacing: .04em; }
+  .fail-pill { background: var(--fail-bg); color: var(--fail-fg); font-weight: 700; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-family: 'Syne', sans-serif; white-space: nowrap; letter-spacing: .04em; }
+  .ok  { color: var(--pass-fg); font-weight: 700; font-family: 'Syne', sans-serif; }
+  .bad { color: var(--fail-fg); font-weight: 700; font-family: 'Syne', sans-serif; }
+  .warn { color: var(--warn-fg); font-weight: 700; font-family: 'Syne', sans-serif; }
+  .reason-cell { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .q-cell { font-size: 13px; max-width: 180px; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent2);
+    padding: 20px 24px;
+    background: #f0f7f4;
+    border-radius: 0 4px 4px 0;
+    margin: 28px 0;
+    font-size: 15px;
+  }
+  .callout strong { font-family: 'Syne', sans-serif; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; color: var(--accent2); }
+
+  /* ── SUMMARY ── */
+  .summary-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 36px 40px;
+    margin-top: 64px;
+    border-radius: 4px;
+  }
+  .summary-box .eyebrow { color: #e07b6b; margin-bottom: 12px; }
+  .summary-box p { color: #c8c2b4; margin-bottom: 0; font-size: 18px; line-height: 1.7; }
+  .summary-box p strong { color: var(--paper); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  header, section { animation: fadeUp .5s ease both; }
+  section:nth-of-type(2) { animation-delay: .05s; }
+  section:nth-of-type(3) { animation-delay: .10s; }
+  section:nth-of-type(4) { animation-delay: .15s; }
+  section:nth-of-type(5) { animation-delay: .20s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <p class="eyebrow">Relatório Comparativo · Avaliação de Sistemas RAG</p>
+    <h1>RAGAS <span>vs</span> DeepEval</h1>
+    <p class="subtitle">O que muda quando você troca um número por um diagnóstico.</p>
+    <div class="meta">
+      <span>historia_ia.txt · 10 perguntas</span>
+      <span>Claude Sonnet 4.6 como juiz</span>
+      <span>Março 2026</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── SEÇÃO 1: REASONING ── -->
+  <section>
+    <p class="section-num">Diferença 01</p>
+    <h2>O Reasoning — saber o que consertar</h2>
+
+    <p>A mesma pergunta, o mesmo score, dois frameworks. A diferença está em o que você recebe além do número.</p>
+
+    <div class="compare">
+      <div class="compare-side ragas">
+        <div class="compare-label">RAGAS · evaluation_scores.csv</div>
+        <pre><code>context_precision: <span class="kw">0.33</span></code></pre>
+        <p style="font-size:14px; color: var(--muted); margin:0;">Um número. Sem contexto. Você deduz o problema.</p>
+      </div>
+      <div class="compare-side deepeval">
+        <div class="compare-label">DeepEval · Reasoning do juiz</div>
+        <blockquote style="margin:0; border:none; background:none; padding:0; font-size:13px; color:#2a3a30;">
+          "The score is 0.33 because the only relevant node appears at rank 3. The first node only provides a general definition of AI. The second node is about Brazil's regulatory framework, which has no relevance. The relevant node should have been ranked first."
+          <cite>claude-sonnet-4-6 · Contextual Precision</cite>
+        </blockquote>
+      </div>
+    </div>
+
+    <p>O número é o mesmo: <code>0.33</code>. O que mudou é que agora você sabe exatamente o que consertar — o retriever está rankeando errado. No RAGAS você teria que deduzir isso. Aqui o juiz entrega o diagnóstico pronto.</p>
+
+    <div class="callout">
+      <strong>O que fazer com isso</strong>
+      O ChromaDB está retornando o chunk sobre o marco regulatório do Brasil antes do chunk sobre Dartmouth/McCarthy. O índice precisa ser reconstruído com <code>force_rebuild=True</code>.
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 2: APLICAÇÕES ATUAIS ── -->
+  <section>
+    <p class="section-num">Diferença 02</p>
+    <h2>O caso "aplicações atuais" — o erro que o RAGAS escondia</h2>
+
+    <p>A pergunta <em>"Quais são as aplicações atuais da IA citadas no texto?"</em> é o exemplo mais revelador da diferença entre os dois frameworks.</p>
+
+    <div class="compare">
+      <div class="compare-side ragas">
+        <div class="compare-label">RAGAS · comportamento esperado</div>
+        <p style="font-size:14px; color: var(--muted); margin:0;">Score mediano — provavelmente entre 0.4 e 0.7. A similaridade semântica entre "o texto não menciona aplicações" e "diagnóstico médico, Netflix, Siri" ainda gera alguma sobreposição vetorial. A falha passa.</p>
+      </div>
+      <div class="compare-side deepeval">
+        <div class="compare-label">DeepEval · resultado real</div>
+        <p style="font-size:14px; color: var(--fail-fg); font-weight:600; margin:0 0 8px;">Correctness: 0.0 · Ctx Recall: 0.0</p>
+        <p style="font-size:13px; color:#2a3a30; margin:0; font-style:italic;">"The Actual Output claims the text does not mention any specific current applications — this is a direct contradiction of the Expected Output."</p>
+      </div>
+    </div>
+
+    <p>O RAG respondeu que o texto não mencionava aplicações. O ground truth listava: diagnóstico médico, veículos autônomos, reconhecimento de voz, tradução automática, Netflix, Spotify, Siri, Alexa, Google Assistant. Uma contradição direta que o RAGAS mascarava com scores medianos.</p>
+  </section>
+
+  <!-- ── SEÇÃO 3: CONFIDENT AI ── -->
+  <section>
+    <p class="section-num">Diferença 03</p>
+    <h2>Confident AI — o que não existia no RAGAS-Project</h2>
+
+    <p>No RAGAS-Project, o equivalente a cada análise era uma linha num CSV:</p>
+
+    <pre><code><span class="cm"># outputs/evaluation_scores.csv</span>
+question,faithfulness,answer_correctness,answer_relevance,context_precision,context_recall
+<span class="st">"Quem cunhou..."</span>,<span class="kw">1.0</span>,<span class="kw">0.86</span>,<span class="kw">0.97</span>,<span class="kw">0.33</span>,<span class="kw">1.0</span></code></pre>
+
+    <p>Sem chunks visíveis, sem reasoning, sem rastreabilidade, sem histórico de runs.</p>
+
+    <p>No Confident AI, para o mesmo test case você tem:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Campo</th>
+          <th>O que você vê</th>
+          <th>Existia no RAGAS?</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>Retrieval Context</td>
+            <td class="reason-cell">Os 3 chunks em ordem — você vê visualmente que o chunk do Brasil veio antes do de Dartmouth</td>
+            <td style="color:var(--fail-fg); font-family:'Syne',sans-serif; font-size:11px;">Não</td>
+          </tr>
+          <tr>
+            <td>Reasoning</td>
+            <td class="reason-cell">Explicação em linguagem natural de por que o score foi aquele valor</td>
+            <td style="color:var(--fail-fg); font-family:'Syne',sans-serif; font-size:11px;">Não</td>
+          </tr>
+          <tr>
+            <td>Test Case ID</td>
+            <td class="reason-cell">ID único rastreável entre runs — você compara a mesma pergunta em execuções diferentes</td>
+            <td style="color:var(--fail-fg); font-family:'Syne',sans-serif; font-size:11px;">Não</td>
+          </tr>
+          <tr>
+            <td>Run Duration</td>
+            <td class="reason-cell">8.58s para esse caso específico</td>
+            <td style="color:var(--fail-fg); font-family:'Syne',sans-serif; font-size:11px;">Não</td>
+          </tr>
+          <tr>
+            <td>Comparação de runs</td>
+            <td class="reason-cell">Verde = melhorou, vermelho = regrediu — linha por linha entre execuções</td>
+            <td style="color:var(--fail-fg); font-family:'Syne',sans-serif; font-size:11px;">Não</td>
+          </tr>
+          <tr>
+            <td>Score numérico</td>
+            <td class="reason-cell">0.33, 1.0, 0.0 etc.</td>
+            <td style="color:var(--pass-fg); font-family:'Syne',sans-serif; font-size:11px;">Sim</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 4: G-EVAL ── -->
+  <section>
+    <p class="section-num">Diferença 04</p>
+    <h2>Métricas customizadas G-Eval — a diferença estrutural</h2>
+
+    <p>No RAGAS as 5 métricas são fixas e calculadas por fórmulas matemáticas. Você não pode mudar o que elas medem. No DeepEval você define o critério de avaliação em linguagem natural, específico para o seu domínio:</p>
+
+    <pre><code><span class="kw">from</span> deepeval.metrics <span class="kw">import</span> GEval
+<span class="kw">from</span> deepeval.test_case <span class="kw">import</span> LLMTestCaseParams
+
+<span class="cm"># Métrica que teria pego a falha das "aplicações atuais"</span>
+metrica = <span class="fn">GEval</span>(
+    name=<span class="st">"sem_negacao_incorreta"</span>,
+    criteria=<span class="st">"""
+    Penalize respostas que afirmem que o texto não contém
+    informações quando o ground truth prova que contém.
+    Um RAG que nega a existência de informação presente
+    no documento é um erro crítico, não uma imprecisão.
+    """</span>,
+    evaluation_params=[
+        LLMTestCaseParams.ACTUAL_OUTPUT,
+        LLMTestCaseParams.EXPECTED_OUTPUT,
+        LLMTestCaseParams.RETRIEVAL_CONTEXT,
+    ],
+    threshold=<span class="kw">0.9</span>,
+    model=judge,
+)</code></pre>
+
+    <p>Essa métrica teria pego a falha da pergunta sobre aplicações <em>antes mesmo de rodar</em> — porque o critério é explícito sobre esse padrão de erro. O RAGAS não tem equivalente.</p>
+  </section>
+
+  <!-- ── TABELA DE RESULTADOS ── -->
+  <section>
+    <p class="section-num">Resultados</p>
+    <h2>Todos os resultados desta execução</h2>
+    <p>10 perguntas · 5 métricas · juiz: claude-sonnet-4-6</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pergunta</th>
+            <th>Métrica</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-row"><td colspan="5">Faithfulness — todas as 10 perguntas</td></tr>
+          <tr>
+            <td class="q-cell">Todas as 10</td>
+            <td>Faithfulness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Respostas 100% fiéis ao contexto. Nenhuma contradição encontrada.</td>
+          </tr>
+
+          <tr class="section-row"><td colspan="5">Correctness (GEval)</td></tr>
+          <tr>
+            <td class="q-cell">Quem cunhou o termo "inteligência artificial"?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">McCarthy, 1956, Dartmouth — todos os fatos corretos.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">O que foi o Teste de Turing?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Turing, 1950, critério de inteligência — correto e completo.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Quais foram os Invernos da IA?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">1974–1980 e 1987–1993, promessas exageradas — idêntico ao ground truth.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Como o AlexNet mudou a IA em 2012?</td>
+            <td>Correctness</td>
+            <td class="ok">0.9</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Fatos corretos. Adicionou contexto sobre GPT além do necessário.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">O que é o GPT-3?</td>
+            <td>Correctness</td>
+            <td class="ok">0.9</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">2020, 175B parâmetros corretos. Omitiu "marco em geração de texto".</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Por que o ChatGPT cresceu tão rápido?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">1 milhão de usuários em 5 dias, novembro 2022 — correto.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Quanto tempo entre Turing e ChatGPT?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">72 anos calculado corretamente. Contexto extra não prejudicou.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Desafios éticos da IA?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Bias, privacidade, empregos, alinhamento + Future of Life e Anthropic.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">IA no Brasil?</td>
+            <td>Correctness</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Marco regulatório 2024, IMPA, USP, UNICAMP — correto.</td>
+          </tr>
+          <tr style="background:#fff8f6;">
+            <td class="q-cell">Quais aplicações atuais da IA no texto?</td>
+            <td>Correctness</td>
+            <td class="bad">0.0</td>
+            <td><span class="fail-pill">FAILED</span></td>
+            <td class="reason-cell">RAG afirmou que o texto não menciona aplicações. Ground truth lista: diagnóstico médico, veículos autônomos, Netflix, Siri, Alexa. Contradição direta.</td>
+          </tr>
+
+          <tr class="section-row"><td colspan="5">Answer Relevancy</td></tr>
+          <tr>
+            <td class="q-cell">7 perguntas</td>
+            <td>Relevancy</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Respostas diretas e focadas, sem informações desnecessárias.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">AlexNet (2012)</td>
+            <td>Relevancy</td>
+            <td class="ok">0.9</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Incluiu menção ao GPT que não era necessária, mas não prejudicou.</td>
+          </tr>
+          <tr>
+            <td class="q-cell">Quanto tempo entre Turing e ChatGPT?</td>
+            <td>Relevancy</td>
+            <td class="warn">0.78</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Adicionou detalhes sobre GPT-3 não solicitados. Passou no limite.</td>
+          </tr>
+
+          <tr class="section-row"><td colspan="5">Contextual Precision</td></tr>
+          <tr style="background:#fff8f6;">
+            <td class="q-cell">Quem cunhou o termo "inteligência artificial"?</td>
+            <td>Ctx Precision</td>
+            <td class="bad">0.33</td>
+            <td><span class="fail-pill">FAILED</span></td>
+            <td class="reason-cell">Chunk correto (McCarthy/1956/Dartmouth) veio em 3º lugar. Chunks 1 e 2 eram irrelevantes: definição geral de IA e marco regulatório do Brasil.</td>
+          </tr>
+
+          <tr class="section-row"><td colspan="5">Contextual Recall</td></tr>
+          <tr>
+            <td class="q-cell">9 perguntas</td>
+            <td>Ctx Recall</td>
+            <td class="ok">1.0</td>
+            <td><span class="pass-pill">PASSED</span></td>
+            <td class="reason-cell">Contexto recuperado cobriu completamente o necessário para responder.</td>
+          </tr>
+          <tr style="background:#fff8f6;">
+            <td class="q-cell">Quais aplicações atuais da IA no texto?</td>
+            <td>Ctx Recall</td>
+            <td class="bad">0.0</td>
+            <td><span class="fail-pill">FAILED</span></td>
+            <td class="reason-cell">Nenhum chunk continha informações sobre aplicações. ChromaDB trouxe história da IA e regulação do Brasil em vez do chunk correto.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SUMMARY ── -->
+  <div class="summary-box">
+    <p class="eyebrow">Conclusão</p>
+    <p>
+      <strong>O RAGAS te diz quanto o sistema errou.</strong>
+      O DeepEval te diz <strong>o que</strong> errou, <strong>onde</strong> errou,
+      <strong>por que</strong> errou — e te deixa definir
+      <strong>o que conta como erro</strong> para o seu caso específico.
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://github.com/RegiMaria/RAGAS-project" target="_blank">RAGAS-Project</a>
+    &nbsp;·&nbsp;
+    <a href="https://deepeval.com" target="_blank">DeepEval</a>
+    &nbsp;·&nbsp;
+    <a href="https://app.confident-ai.com" target="_blank">Confident AI</a>
+    &nbsp;·&nbsp; Março 2026
+  </p>
+</footer>
+
+</body>
+</html>
